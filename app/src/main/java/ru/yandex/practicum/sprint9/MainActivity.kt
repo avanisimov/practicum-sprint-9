@@ -22,11 +22,31 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity() {
+
+    var editTextValue: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val vinNumber = findViewById<EditText>(R.id.vin_number)
+
+        vinNumber.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                editTextValue = s?.toString()
+            }
+
+        })
+
+
         val email = findViewById<EditText>(R.id.email)
         val phoneNumber = findViewById<EditText>(R.id.phone_number)
         val money = findViewById<EditText>(R.id.money)
@@ -43,8 +63,60 @@ class MainActivity : AppCompatActivity() {
 
         phoneNumber.addTextChangedListener(PhoneNumberFormattingTextWatcher())
 
+        money.addTextChangedListener(MoneyTexWatcher())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("editTextValue", editTextValue)
+    }
+}
+
+class MoneyTexWatcher : TextWatcher {
+
+    val numberFormat = NumberFormat.getCurrencyInstance().apply {
 
     }
+
+    var mSelfChange = false
+    var lastValue: String? = null
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        Log.d("SPRINT_9", "beforeTextChanged $s")
+        lastValue = s?.toString()
+    }
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        Log.d("SPRINT_9", "onTextChanged $s")
+    }
+
+    override fun afterTextChanged(s: Editable?) {
+        if (mSelfChange) {
+            return
+        }
+        Log.d("SPRINT_9", "afterTextChanged $s")
+        if (s != null) {
+            val value = s.toString()
+            val doubleValue = value.toDoubleOrNull()
+            if (doubleValue != null) {
+                val formattedValue = numberFormat.format(doubleValue)
+                mSelfChange = true
+                s.replace(0, value.length, formattedValue, 0, formattedValue.length)
+                mSelfChange = false
+            }
+
+//            if (value.length > 3) {
+//                val first = value.first()
+//                val tail = value.substring(1, value.length)
+//                val result = "$first $tail"
+//                mSelfChange = true
+//                s.replace(0, value.length, result, 0, result.length)
+//                mSelfChange = false
+//                Log.d("SPRINT_9", "result $result")
+//            }
+
+        }
+    }
+
 }
 
 fun View.showKeyboard() {
